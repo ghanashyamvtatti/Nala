@@ -4,8 +4,8 @@ import { Clock, Users, ArrowRight } from 'lucide-react';
 
 export default function RecipeCard({ recipe }) {
   // Extract metadata if available, or use defaults
-  const prepTime = recipe.metadata?.prepTime || '30m';
-  const servings = recipe.metadata?.servings || '4';
+  const prepTime = recipe.metadata?.prepTime || '~';
+  const servings = recipe.metadata?.servings || '~';
 
   return (
     <Link

@@ -29,10 +29,17 @@ export function parseRecipe(markdown) {
             else if (sectionName.includes('variations')) currentSection = 'variations';
             else if (sectionName.includes('additional')) currentSection = 'additionalInfo';
             else if (sectionName.includes('social')) currentSection = 'social';
+            else if (sectionName.includes('metadata')) currentSection = 'metadata';
             else currentSection = '';
         } else {
             if (currentSection === 'description') {
                 recipe.description += (recipe.description ? '\n' : '') + line;
+            } else if (currentSection === 'metadata') {
+                if (line.toLowerCase().startsWith('prep time:')) {
+                    recipe.metadata.prepTime = line.substring(10).trim();
+                } else if (line.toLowerCase().startsWith('servings:')) {
+                    recipe.metadata.servings = line.substring(9).trim();
+                }
             } else if (currentSection === 'ingredients') {
                 if (line.startsWith('- ') || line.startsWith('* ')) {
                     recipe.ingredients.push(line.substring(2).trim());
@@ -110,6 +117,12 @@ export function recipeToMarkdown(recipe) {
 
     if (recipe.additionalInfo) {
         markdown += `## Additional Information\n${recipe.additionalInfo}\n`;
+    }
+
+    if (recipe.metadata && (recipe.metadata.prepTime || recipe.metadata.servings)) {
+        markdown += `\n## Metadata\n`;
+        if (recipe.metadata.prepTime) markdown += `Prep Time: ${recipe.metadata.prepTime}\n`;
+        if (recipe.metadata.servings) markdown += `Servings: ${recipe.metadata.servings}\n`;
     }
 
     return markdown;
