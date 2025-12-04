@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        /* Pastel Theme (Light) */
+        --background: 40 50% 98%;
+        /* Warm Cream */
+        --foreground: 222 47% 11%;
+        /* Dark Blue-Gray */
+
+        --card: 0 0% 100%;
+        --card-foreground: 222 47% 11%;
+
+        --popover: 0 0% 100%;
+        --popover-foreground: 222 47% 11%;
+
+        --primary: 262 60% 65%;
+        /* Pastel Purple */
+        --primary-foreground: 210 40% 98%;
+
+        --secondary: 340 70% 90%;
+        /* Pastel Pink */
+        --secondary-foreground: 222 47% 11%;
+
+        --muted: 210 40% 96.1%;
+        --muted-foreground: 215.4 16.3% 46.9%;
+
+        --accent: 340 70% 90%;
+        --accent-foreground: 222 47% 11%;
+
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 210 40% 98%;
+
+        --border: 214.3 31.8% 91.4%;
+        --input: 214.3 31.8% 91.4%;
+        --ring: 262 60% 65%;
+
+        --radius: 0.75rem;
+        /* Softer rounded corners */
+    }
+
+    .dark {
+        /* Dark Mode */
+        --background: 222 47% 11%;
+        /* Deep Blue-Gray */
+        --foreground: 210 40% 98%;
+
+        --card: 217 33% 17%;
+        --card-foreground: 210 40% 98%;
+
+        --popover: 222 47% 11%;
+        --popover-foreground: 210 40% 98%;
+
+        --primary: 262 60% 75%;
+        /* Lighter Pastel Purple */
+        --primary-foreground: 222 47.4% 11.2%;
+
+        --secondary: 217.2 32.6% 17.5%;
+        --secondary-foreground: 210 40% 98%;
+
+        --muted: 217.2 32.6% 17.5%;
+        --muted-foreground: 215 20.2% 65.1%;
+
+        --accent: 217.2 32.6% 17.5%;
+        --accent-foreground: 210 40% 98%;
+
+        --destructive: 0 62.8% 30.6%;
+        --destructive-foreground: 210 40% 98%;
+
+        --border: 217.2 32.6% 17.5%;
+        --input: 217.2 32.6% 17.5%;
+        --ring: 262 60% 75%;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground transition-colors duration-300;
+    }
+}
