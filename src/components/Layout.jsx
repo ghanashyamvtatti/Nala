@@ -34,7 +34,7 @@ export default function Layout({ children }) {
       <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-colors duration-300">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 font-bold text-xl tracking-tight hover:opacity-80 transition-opacity">
-            <img src="/logo.png" alt="Nala Logo" className="w-8 h-8 object-contain" />
+            <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Nala Logo" className="w-8 h-8 object-contain" />
             <span>Nala</span>
           </Link>
 
