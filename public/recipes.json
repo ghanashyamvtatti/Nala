@@ -1,0 +1,12 @@
+[
+    {
+        "name": "fluffy-pancakes.md",
+        "path": "recipes/fluffy-pancakes.md",
+        "sha": "mock-sha-1"
+    },
+    {
+        "name": "classic-guacamole.md",
+        "path": "recipes/classic-guacamole.md",
+        "sha": "mock-sha-2"
+    }
+]
