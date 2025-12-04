@@ -220,7 +220,7 @@ export async function createPullRequest(recipe, filename, token) {
             base: defaultBranch
         });
 
-        return pr;
+        return pr.html_url;
 
     } catch (error) {
         console.error("Error creating PR:", error);
