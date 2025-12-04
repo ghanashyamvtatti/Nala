@@ -5,8 +5,11 @@ let owner = '';
 let repo = '';
 
 export function initializeGitHub(token, repoOwner, repoName) {
-    const trimmedToken = token ? token.replace(/\s/g, '') : '';
-    octokit = new Octokit({ auth: trimmedToken });
+    let cleanToken = token ? token.trim() : '';
+    // Remove common prefixes (Bearer, token, etc) and all whitespace
+    cleanToken = cleanToken.replace(/^(Bearer|token)[:\s]+/i, '').replace(/\s/g, '');
+
+    octokit = new Octokit({ auth: cleanToken });
     owner = repoOwner;
     repo = repoName;
 }
