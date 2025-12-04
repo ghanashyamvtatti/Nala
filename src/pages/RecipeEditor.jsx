@@ -57,7 +57,7 @@ export default function RecipeEditor() {
             // Create a filename from title (slugify)
             const filename = recipe.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.md';
 
-            const prUrl = await createPullRequest(token, filename, markdown, `Add recipe: ${recipe.title}`);
+            const prUrl = await createPullRequest({ title: recipe.title, markdown }, filename, token);
 
             setStatus({
                 type: 'success',

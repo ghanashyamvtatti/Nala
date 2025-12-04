@@ -14,18 +14,32 @@ export function getRepoDetails() {
     return { owner, repo };
 }
 
-export async function fetchRecipes() {
-    if (!owner || !repo) {
-        // Try to infer from current URL if hosted on GitHub Pages
-        // Format: https://<owner>.github.io/<repo>/
-        const url = window.location.hostname;
-        if (url.includes('github.io')) {
-            owner = url.split('.')[0];
-            repo = window.location.pathname.split('/')[1] || '';
-        }
+function ensureRepoDetails() {
+    if (owner && repo) return true;
 
+    // Try to infer from current URL if hosted on GitHub Pages
+    // Format: https://<owner>.github.io/<repo>/
+    const url = window.location.hostname;
+    if (url.includes('github.io')) {
+        owner = url.split('.')[0];
+        repo = window.location.pathname.split('/')[1] || '';
+    }
+
+    // Local Dev Mode
+    if ((!owner || !repo) && (url.includes('localhost') || url.includes('127.0.0.1'))) {
+        return false; // Handle local dev separately
+    }
+
+    return !!(owner && repo);
+}
+
+export async function fetchRecipes() {
+    ensureRepoDetails();
+
+    if (!owner || !repo) {
+        const url = window.location.hostname;
         // Local Dev Mode
-        if ((!owner || !repo) && (url.includes('localhost') || url.includes('127.0.0.1'))) {
+        if (url.includes('localhost') || url.includes('127.0.0.1')) {
             console.log("Running in local dev mode");
             try {
                 const response = await fetch('/recipes.json');
@@ -93,16 +107,12 @@ export async function fetchRecipes() {
 }
 
 export async function fetchRecipe(filename) {
-    if (!owner || !repo) {
-        // Initialize if needed (same logic as fetchRecipes, simplified here)
-        const url = window.location.hostname;
-        if (url.includes('github.io')) {
-            owner = url.split('.')[0];
-            repo = window.location.pathname.split('/')[1] || '';
-        }
+    ensureRepoDetails();
 
+    if (!owner || !repo) {
+        const url = window.location.hostname;
         // Local Dev Mode
-        if ((!owner || !repo) && (url.includes('localhost') || url.includes('127.0.0.1'))) {
+        if (url.includes('localhost') || url.includes('127.0.0.1')) {
             try {
                 const res = await fetch(`/recipes/${filename}`);
                 if (!res.ok) throw new Error("Recipe not found locally");
@@ -144,6 +154,7 @@ export async function createPullRequest(recipe, filename, token) {
     if (token) {
         initializeGitHub(token, owner, repo);
     }
+    ensureRepoDetails();
 
     const branchName = `recipe-${Date.now()}`;
     const message = `Add/Update recipe: ${recipe.title}`;
