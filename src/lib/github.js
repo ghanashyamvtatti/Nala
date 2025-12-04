@@ -5,7 +5,7 @@ let owner = '';
 let repo = '';
 
 export function initializeGitHub(token, repoOwner, repoName) {
-    const trimmedToken = token ? token.trim() : '';
+    const trimmedToken = token ? token.replace(/\s/g, '') : '';
     octokit = new Octokit({ auth: trimmedToken });
     owner = repoOwner;
     repo = repoName;
