@@ -155,6 +155,7 @@ export async function createPullRequest(recipe, filename, token) {
     if (token) {
         initializeGitHub(token, owner, repo);
     }
+    ensureRepoDetails();
 
     const branchName = `recipe-${Date.now()}`;
     const message = `Add/Update recipe: ${recipe.title}`;
