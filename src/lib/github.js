@@ -5,7 +5,8 @@ let owner = '';
 let repo = '';
 
 export function initializeGitHub(token, repoOwner, repoName) {
-    octokit = new Octokit({ auth: token });
+    const trimmedToken = token ? token.trim() : '';
+    octokit = new Octokit({ auth: trimmedToken });
     owner = repoOwner;
     repo = repoName;
 }
@@ -156,6 +157,8 @@ export async function createPullRequest(recipe, filename, token) {
         initializeGitHub(token, owner, repo);
     }
     ensureRepoDetails();
+
+    console.log(`Creating PR with: Owner=${owner}, Repo=${repo}, TokenLength=${token ? token.length : 0}`);
 
     const branchName = `recipe-${Date.now()}`;
     const message = `Add/Update recipe: ${recipe.title}`;
