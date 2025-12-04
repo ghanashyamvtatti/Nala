@@ -61,7 +61,7 @@ export async function fetchRecipes() {
         const { data: files } = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
             owner,
             repo,
-            path: 'recipes',
+            path: 'public/recipes',
         });
 
         // 2. Filter for markdown files
@@ -124,7 +124,7 @@ export async function fetchRecipe(filename) {
         const { data } = await octokit.request('GET /repos/{owner}/{repo}/contents/{path}', {
             owner,
             repo,
-            path: `recipes/${filename}`,
+            path: `public/recipes/${filename}`,
         });
 
         const content = atob(data.content);
@@ -148,7 +148,7 @@ export async function createPullRequest(recipe, filename, token) {
     const branchName = `recipe-${Date.now()}`;
     const message = `Add/Update recipe: ${recipe.title}`;
     const content = btoa(unescape(encodeURIComponent(recipe.markdown))); // Handle UTF-8
-    const path = `recipes/${filename}`;
+    const path = `public/recipes/${filename}`;
 
     try {
         // 1. Get default branch (usually main)
