@@ -47,7 +47,7 @@ export default function Layout({ children }) {
               {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
             <a
-              href="https://github.com/ghanashyamvtatti/nala"
+              href="https://github.com/ghanashyamvtatti/Nala"
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground hover:text-foreground transition-colors"

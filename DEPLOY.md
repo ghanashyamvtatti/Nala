@@ -14,17 +14,17 @@ I have already configured the project for deployment. Here are the steps to depl
     ```
 
 3.  **GitHub Settings**:
-    *   Go to your repository on GitHub: [https://github.com/ghanashyamvtatti/nala](https://github.com/ghanashyamvtatti/nala)
+    *   Go to your repository on GitHub: [https://github.com/ghanashyamvtatti/Nala](https://github.com/ghanashyamvtatti/Nala)
     *   Go to **Settings** > **Pages**.
     *   Ensure the **Source** is set to `Deploy from a branch`.
     *   Ensure the **Branch** is set to `gh-pages` / `(root)`.
     *   Save if necessary.
 
 4.  **Visit Site**: Your site should be live at:
-    [https://ghanashyamvtatti.github.io/nala/](https://ghanashyamvtatti.github.io/nala/)
+    [https://ghanashyamvtatti.github.io/Nala/](https://ghanashyamvtatti.github.io/Nala/)
 
 ## Configuration Changes Made
 *   **Router**: Switched to `HashRouter` in `App.jsx` to prevent 404 errors on refresh (GitHub Pages doesn't support SPA routing natively).
-*   **Base Path**: Updated `vite.config.js` with `base: '/nala/'` to ensure assets load correctly from the subdirectory.
+*   **Base Path**: Updated `vite.config.js` with `base: '/Nala/'` to ensure assets load correctly from the subdirectory.
 *   **Scripts**: Added `predeploy` and `deploy` scripts to `package.json`.
 *   **Dependency**: Installed `gh-pages` package.
