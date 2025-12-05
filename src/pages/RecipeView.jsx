@@ -59,7 +59,7 @@ export default function RecipeView() {
 
             <div className="flex justify-end gap-2 mb-8">
                 <button
-                    onClick={() => navigate(`/editor?filename=${encodeURIComponent(filename)}`)}
+                    onClick={() => navigate(`/new?filename=${encodeURIComponent(filename)}`)}
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors text-sm font-medium"
                 >
                     <Edit className="w-4 h-4" />
