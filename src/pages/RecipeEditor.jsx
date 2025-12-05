@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPullRequest } from '../lib/github';
 import { recipeToMarkdown } from '../lib/parser';
 import AuthModal from '../components/AuthModal';
