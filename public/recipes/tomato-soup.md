@@ -13,7 +13,7 @@ A nostalgic Indian style tomato soup
 - Salt - as needed
 - Sugar - as needed
 - Chilli powder - as needed
-- Vegetable Bouillon Cube / Vegetable Broth / Maggi Magic Masalaâ¨
+- Vegetable Bouillon Cube / Vegetable Broth / Maggi Magic MasalaÃ¢ÂÂ¨
 - Pepper - as needed
 - Croutons (optional)
 
@@ -29,3 +29,7 @@ A nostalgic Indian style tomato soup
 
 ## Additional Information
 You can use garlic powder in a pinch. This recipe can be as simple or complex as you want to make it. It can use minimal ingredients and still taste amazing!
+
+## Metadata
+Prep Time: 30m
+Servings: 4
