@@ -10,7 +10,10 @@ export function parseRecipe(markdown) {
         variations: [],
         social: [],
         additionalInfo: '',
-        metadata: {}
+        social: [],
+        additionalInfo: '',
+        metadata: {},
+        nutrition: {}
     };
 
     let currentSection = '';
@@ -30,6 +33,7 @@ export function parseRecipe(markdown) {
             else if (sectionName.includes('additional')) currentSection = 'additionalInfo';
             else if (sectionName.includes('social')) currentSection = 'social';
             else if (sectionName.includes('metadata')) currentSection = 'metadata';
+            else if (sectionName.includes('nutrition')) currentSection = 'nutrition';
             else currentSection = '';
         } else {
             if (currentSection === 'description') {
@@ -69,6 +73,12 @@ export function parseRecipe(markdown) {
                 } else {
                     recipe.social.push(line);
                 }
+            } else if (currentSection === 'nutrition') {
+                const lowerLine = line.toLowerCase();
+                if (lowerLine.startsWith('calories:')) recipe.nutrition.calories = line.substring(9).trim();
+                else if (lowerLine.startsWith('protein:')) recipe.nutrition.protein = line.substring(8).trim();
+                else if (lowerLine.startsWith('carbs:')) recipe.nutrition.carbs = line.substring(6).trim();
+                else if (lowerLine.startsWith('fat:')) recipe.nutrition.fat = line.substring(4).trim();
             }
         }
     }
@@ -123,6 +133,14 @@ export function recipeToMarkdown(recipe) {
         markdown += `\n## Metadata\n`;
         if (recipe.metadata.prepTime) markdown += `Prep Time: ${recipe.metadata.prepTime}\n`;
         if (recipe.metadata.servings) markdown += `Servings: ${recipe.metadata.servings}\n`;
+    }
+
+    if (recipe.nutrition && Object.keys(recipe.nutrition).length > 0) {
+        markdown += `\n## Nutrition\n`;
+        if (recipe.nutrition.calories) markdown += `Calories: ${recipe.nutrition.calories}\n`;
+        if (recipe.nutrition.protein) markdown += `Protein: ${recipe.nutrition.protein}\n`;
+        if (recipe.nutrition.carbs) markdown += `Carbs: ${recipe.nutrition.carbs}\n`;
+        if (recipe.nutrition.fat) markdown += `Fat: ${recipe.nutrition.fat}\n`;
     }
 
     return markdown;

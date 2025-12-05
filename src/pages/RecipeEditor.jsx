@@ -3,7 +3,9 @@ import { createPullRequest } from '../lib/github';
 import { recipeToMarkdown } from '../lib/parser';
 import AuthModal from '../components/AuthModal';
 import { Plus, Trash2, Save, ArrowLeft, Link as LinkIcon } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import { fetchRecipe } from '../lib/github';
+import { parseRecipe } from '../lib/parser';
 
 export default function RecipeEditor() {
     const [recipe, setRecipe] = useState({
@@ -17,8 +19,33 @@ export default function RecipeEditor() {
         metadata: {
             prepTime: '',
             servings: ''
+        },
+        nutrition: {
+            calories: '',
+            protein: '',
+            carbs: '',
+            fat: ''
         }
     });
+
+    const [searchParams] = useSearchParams();
+    const editFilename = searchParams.get('filename');
+
+    useEffect(() => {
+        if (editFilename) {
+            async function loadRecipe() {
+                try {
+                    const data = await fetchRecipe(editFilename);
+                    const parsed = parseRecipe(data.content);
+                    setRecipe(parsed);
+                } catch (error) {
+                    console.error("Failed to load recipe for editing:", error);
+                    setStatus({ type: 'error', message: 'Failed to load recipe for editing.' });
+                }
+            }
+            loadRecipe();
+        }
+    }, [editFilename]);
 
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [status, setStatus] = useState({ type: '', message: '' });
@@ -54,8 +81,11 @@ export default function RecipeEditor() {
 
         try {
             const markdown = recipeToMarkdown(recipe);
-            // Create a filename from title (slugify)
-            const filename = recipe.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.md';
+            // Create a filename from title (slugify) if new, or use existing
+            let filename = editFilename;
+            if (!filename) {
+                filename = recipe.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.md';
+            }
 
             const prUrl = await createPullRequest({ title: recipe.title, markdown }, filename, token);
 
@@ -63,17 +93,21 @@ export default function RecipeEditor() {
                 type: 'success',
                 message: `Success! Pull Request created: ${prUrl}`
             });
-            // Reset form
-            setRecipe({
-                title: '',
-                description: '',
-                ingredients: [],
-                steps: [],
-                variations: [],
-                social: [],
-                additionalInfo: '',
-                metadata: { prepTime: '', servings: '' }
-            });
+
+            if (!editFilename) {
+                // Reset form only if creating new
+                setRecipe({
+                    title: '',
+                    description: '',
+                    ingredients: [],
+                    steps: [],
+                    variations: [],
+                    social: [],
+                    additionalInfo: '',
+                    metadata: { prepTime: '', servings: '' },
+                    nutrition: { calories: '', protein: '', carbs: '', fat: '' }
+                });
+            }
         } catch (error) {
             console.error(error);
             setStatus({
@@ -96,7 +130,7 @@ export default function RecipeEditor() {
             </Link>
 
             <div className="bg-card rounded-2xl shadow-sm border border-border p-8 md:p-12">
-                <h1 className="text-3xl font-serif font-bold mb-8 text-foreground">New Recipe</h1>
+                <h1 className="text-3xl font-serif font-bold mb-8 text-foreground">{editFilename ? 'Edit Recipe' : 'New Recipe'}</h1>
 
                 {status.message && (
                     <div className={`p-4 rounded-lg mb-8 ${status.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' :
@@ -153,6 +187,53 @@ export default function RecipeEditor() {
                                     value={recipe.metadata.servings}
                                     onChange={e => setRecipe({ ...recipe, metadata: { ...recipe.metadata, servings: e.target.value } })}
                                     placeholder="e.g. 4"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Nutrition Info */}
+                    <div className="space-y-4">
+                        <h2 className="text-xl font-serif font-bold">Nutrition Information</h2>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-muted-foreground mb-1">Calories</label>
+                                <input
+                                    type="text"
+                                    className="w-full px-4 py-2 rounded-lg border border-input bg-background focus:ring-2 focus:ring-ring focus:border-transparent outline-none transition-all"
+                                    value={recipe.nutrition?.calories || ''}
+                                    onChange={e => setRecipe({ ...recipe, nutrition: { ...recipe.nutrition, calories: e.target.value } })}
+                                    placeholder="e.g. 350"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-muted-foreground mb-1">Protein</label>
+                                <input
+                                    type="text"
+                                    className="w-full px-4 py-2 rounded-lg border border-input bg-background focus:ring-2 focus:ring-ring focus:border-transparent outline-none transition-all"
+                                    value={recipe.nutrition?.protein || ''}
+                                    onChange={e => setRecipe({ ...recipe, nutrition: { ...recipe.nutrition, protein: e.target.value } })}
+                                    placeholder="e.g. 20g"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-muted-foreground mb-1">Carbs</label>
+                                <input
+                                    type="text"
+                                    className="w-full px-4 py-2 rounded-lg border border-input bg-background focus:ring-2 focus:ring-ring focus:border-transparent outline-none transition-all"
+                                    value={recipe.nutrition?.carbs || ''}
+                                    onChange={e => setRecipe({ ...recipe, nutrition: { ...recipe.nutrition, carbs: e.target.value } })}
+                                    placeholder="e.g. 45g"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-muted-foreground mb-1">Fat</label>
+                                <input
+                                    type="text"
+                                    className="w-full px-4 py-2 rounded-lg border border-input bg-background focus:ring-2 focus:ring-ring focus:border-transparent outline-none transition-all"
+                                    value={recipe.nutrition?.fat || ''}
+                                    onChange={e => setRecipe({ ...recipe, nutrition: { ...recipe.nutrition, fat: e.target.value } })}
+                                    placeholder="e.g. 12g"
                                 />
                             </div>
                         </div>
@@ -309,7 +390,7 @@ export default function RecipeEditor() {
                         ) : (
                             <>
                                 <Save className="w-5 h-5" />
-                                Create Pull Request
+                                {editFilename ? 'Update Recipe' : 'Create Pull Request'}
                             </>
                         )}
                     </button>

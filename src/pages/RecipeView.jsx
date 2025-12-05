@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { fetchRecipe } from '../lib/github';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { fetchRecipe, getRepoDetails } from '../lib/github';
 import { parseRecipe } from '../lib/parser';
 import SocialEmbed from '../components/SocialEmbed';
 import ReactMarkdown from 'react-markdown';
-import { Clock, Users, ArrowLeft, Loader2, AlertCircle, ChefHat } from 'lucide-react';
+import { Clock, Users, ArrowLeft, Loader2, AlertCircle, ChefHat, History, Edit } from 'lucide-react';
 
 export default function RecipeView() {
     const { filename } = useParams();
+    const navigate = useNavigate();
     const [recipe, setRecipe] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -53,7 +54,27 @@ export default function RecipeView() {
             <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary mb-8 transition-colors">
                 <ArrowLeft className="w-4 h-4" />
                 Back to Recipes
+                Back to Recipes
             </Link>
+
+            <div className="flex justify-end gap-2 mb-8">
+                <button
+                    onClick={() => navigate(`/editor?filename=${encodeURIComponent(filename)}`)}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors text-sm font-medium"
+                >
+                    <Edit className="w-4 h-4" />
+                    Edit Recipe
+                </button>
+                <a
+                    href={`https://github.com/${getRepoDetails().owner}/${getRepoDetails().repo}/commits/main/public/recipes/${filename}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border hover:bg-secondary/50 transition-colors text-sm font-medium"
+                >
+                    <History className="w-4 h-4" />
+                    History
+                </a>
+            </div>
 
             <article className="prose prose-slate dark:prose-invert max-w-none">
                 <header className="mb-12 not-prose">
@@ -107,6 +128,39 @@ export default function RecipeView() {
                                     {recipe.social.map((url, index) => (
                                         <SocialEmbed key={index} url={url} />
                                     ))}
+                                </div>
+                            </section>
+                        )}
+
+                        {/* Nutrition Badges */}
+                        {recipe.nutrition && Object.keys(recipe.nutrition).length > 0 && (
+                            <section>
+                                <h2 className="text-xl font-serif font-bold mb-4">Nutrition</h2>
+                                <div className="grid grid-cols-2 gap-4">
+                                    {recipe.nutrition.calories && (
+                                        <div className="bg-secondary/50 p-3 rounded-lg">
+                                            <span className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Calories</span>
+                                            <span className="font-medium">{recipe.nutrition.calories}</span>
+                                        </div>
+                                    )}
+                                    {recipe.nutrition.protein && (
+                                        <div className="bg-secondary/50 p-3 rounded-lg">
+                                            <span className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Protein</span>
+                                            <span className="font-medium">{recipe.nutrition.protein}</span>
+                                        </div>
+                                    )}
+                                    {recipe.nutrition.carbs && (
+                                        <div className="bg-secondary/50 p-3 rounded-lg">
+                                            <span className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Carbs</span>
+                                            <span className="font-medium">{recipe.nutrition.carbs}</span>
+                                        </div>
+                                    )}
+                                    {recipe.nutrition.fat && (
+                                        <div className="bg-secondary/50 p-3 rounded-lg">
+                                            <span className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Fat</span>
+                                            <span className="font-medium">{recipe.nutrition.fat}</span>
+                                        </div>
+                                    )}
                                 </div>
                             </section>
                         )}
