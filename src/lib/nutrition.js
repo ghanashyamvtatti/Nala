@@ -111,8 +111,27 @@ export async function calculateNutrition(ingredients, apiKey) {
         // Clean query for better matching
         // Remove size adjectives that confuse search (e.g. "large onion" -> "Eggs, Large")
         let query = parsed.food.replace(/\b(large|medium|small|chopped|diced|minced|sliced)\b/gi, '').trim();
-        // If query becomes empty, revert
-        if (!query) query = parsed.food;
+
+        // Common Synonyms
+        const synonyms = {
+            'jeera': 'cumin',
+            'haldi': 'turmeric',
+            'dhania': 'coriander',
+            'hing': 'asafoetida',
+            'elaichi': 'cardamom'
+        };
+
+        Object.keys(synonyms).forEach(key => {
+            const regex = new RegExp(`\\b${key}\\b`, 'gi');
+            query = query.replace(regex, synonyms[key]);
+        });
+
+        // STRICT SANITIZATION: Remove any character that is not a letter, number, or space to prevent API 500 errors
+        // This handles "1/2" leftovers, special chars, etc.
+        query = query.replace(/[^a-zA-Z0-9\s]/g, '').trim();
+
+        // If query becomes empty, revert to alphanumeric only of original
+        if (!query) query = parsed.food.replace(/[^a-zA-Z0-9\s]/g, '').trim();
 
         // Search USDA - Fetch more results to filter locally
         const searchUrl = `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${apiKey}&query=${encodeURIComponent(query)}&dataType=Foundation,SR Legacy&pageSize=25`;
@@ -126,11 +145,6 @@ export async function calculateNutrition(ingredients, apiKey) {
             const searchData = await searchRes.json();
 
             if (searchData.foods && searchData.foods.length > 0) {
-                // Best match logic:
-                // 1. Prefer exact match of description
-                // 2. Prefer shorter descriptions (less likely to be "soup, tomato, canned, concentrate")
-                // 3. Fallback to first
-
                 // Best match logic with scoring
                 let bestMatch = searchData.foods[0];
                 let maxScore = -1000;
@@ -138,6 +152,8 @@ export async function calculateNutrition(ingredients, apiKey) {
                 const lowerQuery = query.toLowerCase();
 
                 searchData.foods.forEach(food => {
+                    if (!food.description) return; // Safety check
+
                     let score = 0;
                     const desc = food.description.toLowerCase();
 
@@ -175,6 +191,7 @@ export async function calculateNutrition(ingredients, apiKey) {
                 const ratio = grams / 100;
 
                 const getNutrient = (namePatterns) => {
+                    if (!food.foodNutrients) return 0; // Safety check
                     const nutrient = food.foodNutrients.find(n => {
                         const name = n.nutrientName.toLowerCase();
                         return namePatterns.some(p => name.includes(p));
