@@ -225,7 +225,7 @@ export default function RecipeEditor() {
                             'bg-blue-50 text-blue-700 border border-blue-200'
                         }`}>
                         {status.message}
-                        {status.type === 'success' && (
+                        {status.type === 'success' && status.message.includes('Pull Request') && (
                             <a href={status.message.split(': ')[1]} target="_blank" rel="noopener noreferrer" className="ml-2 underline font-medium">View PR</a>
                         )}
                     </div>
