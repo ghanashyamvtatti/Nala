@@ -136,11 +136,11 @@ export default function RecipeEditor() {
             return;
         }
 
-        let apiKey = localStorage.getItem('calorie_ninjas_key');
+        let apiKey = localStorage.getItem('usda_api_key');
         if (!apiKey) {
-            apiKey = prompt("Please enter your CalorieNinjas API Key (get one for free at calorieninjas.com):");
+            apiKey = prompt("Please enter your USDA FoodData Central API Key (get one for free at api.data.gov):");
             if (!apiKey) return;
-            localStorage.setItem('calorie_ninjas_key', apiKey);
+            localStorage.setItem('usda_api_key', apiKey);
         }
 
         setIsCalculating(true);
@@ -159,7 +159,7 @@ export default function RecipeEditor() {
         } catch (error) {
             console.error(error);
             if (error.message === "Invalid API Key") {
-                localStorage.removeItem('calorie_ninjas_key');
+                localStorage.removeItem('usda_api_key');
                 setStatus({ type: 'error', message: 'Invalid API Key. Please try again.' });
             } else {
                 setStatus({ type: 'error', message: `Calculation failed: ${error.message}` });
@@ -288,7 +288,7 @@ export default function RecipeEditor() {
                                 onClick={handleCalculateNutrition}
                                 disabled={isCalculating || recipe.ingredients.length === 0}
                                 className="text-sm px-3 py-1.5 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                title="Requires free CalorieNinjas API Key"
+                                title="Requires free USDA API Key"
                             >
                                 {isCalculating ? (
                                     <span className="animate-spin">⏳</span>

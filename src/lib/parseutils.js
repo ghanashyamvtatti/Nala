@@ -1,9 +1,10 @@
-import nlp from 'compromise';
+// import nlp from 'compromise';
 
 export function parsePlainText(text) {
     if (!text) return null;
 
-    const doc = nlp(text);
+    // const doc = nlp(text); // Unused for now
+
     const lines = text.split('\n').map(l => l.trim()).filter(l => l);
 
     const recipe = {
