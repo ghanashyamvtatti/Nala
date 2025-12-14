@@ -13,9 +13,9 @@ A nostalgic Indian style tomato soup
 - Salt - as needed
 - Sugar - as needed
 - Chilli powder - as needed
-- Vegetable Bouillon Cube / Vegetable Broth / Maggi Magic MasalaÃ¢ÂÂ¨
 - Pepper - as needed
 - Croutons (optional)
+- Vegetable Bouillon Cube / Vegetable Broth / Maggi Magic Masala
 
 ## Steps
 1. Melt the butter in a saucepan
