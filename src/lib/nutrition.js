@@ -134,7 +134,7 @@ export async function calculateNutrition(ingredients, apiKey) {
         if (!query) query = parsed.food.replace(/[^a-zA-Z0-9\s]/g, '').trim();
 
         // Search USDA - Fetch more results to filter locally
-        const searchUrl = `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${apiKey}&query=${encodeURIComponent(query)}&dataType=Foundation,SR Legacy&pageSize=25`;
+        const searchUrl = `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${apiKey}&query=${encodeURIComponent(query)}&dataType=Foundation,SR Legacy&pageSize=50`;
 
         try {
             const searchRes = await fetch(searchUrl);
@@ -164,13 +164,15 @@ export async function calculateNutrition(ingredients, apiKey) {
                     else if (desc.includes(lowerQuery)) score += 10;
 
                     // 2. Prefer raw/fresh
-                    if (desc.includes('raw') && !lowerQuery.includes('cooked')) score += 5;
-                    if (desc.includes('fresh')) score += 5;
+                    if (desc.includes('raw') && !lowerQuery.includes('cooked')) score += 15; // Increased boost
+                    if (desc.includes('fresh')) score += 15; // Increased boost
 
                     // 3. Penalize processed/irrelevant if not in query
-                    const penalties = ['cracker', 'chip', 'bread', 'soup', 'canned', 'sauce', 'mix', 'beverage', 'snack', 'candy', 'babyfood', 'baby food', 'formula'];
+                    // Added: dried, powder, concentrate, flake, paste to avoid high-concentration mistakes (e.g. sun-dried tomatoes vs fresh)
+                    const penalties = ['cracker', 'chip', 'bread', 'soup', 'canned', 'sauce', 'mix', 'beverage', 'snack', 'candy', 'babyfood', 'baby food', 'formula',
+                        'dried', 'powder', 'concentrate', 'flake', 'paste'];
                     penalties.forEach(bad => {
-                        if (desc.includes(bad) && !lowerQuery.includes(bad)) score -= 20;
+                        if (desc.includes(bad) && !lowerQuery.includes(bad)) score -= 25; // Increased penalty
                     });
 
                     // 4. Penalize branded foods if we want generic (Foundation/SR Legacy usually good, but just in case)
