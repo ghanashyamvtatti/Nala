@@ -10,8 +10,7 @@ export function parseRecipe(markdown) {
         variations: [],
         social: [],
         additionalInfo: '',
-        social: [],
-        additionalInfo: '',
+
         metadata: {},
         nutrition: {}
     };

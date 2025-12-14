@@ -6,6 +6,11 @@ import { Plus, Trash2, Save, ArrowLeft, Link as LinkIcon } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { fetchRecipe } from '../lib/github';
 import { parseRecipe } from '../lib/parser';
+import { calculateNutrition } from '../lib/nutrition';
+import { Sparkles, Calculator, Info, Wand2 } from 'lucide-react';
+import { parsePlainText } from '../lib/parseutils';
+import SmartPasteModal from '../components/SmartPasteModal';
+
 
 export default function RecipeEditor() {
     const [recipe, setRecipe] = useState({
@@ -50,6 +55,9 @@ export default function RecipeEditor() {
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [status, setStatus] = useState({ type: '', message: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isCalculating, setIsCalculating] = useState(false);
+    const [showSmartPaste, setShowSmartPaste] = useState(false);
+
 
     // Helper for array fields (ingredients, steps, variations, social)
     const [newItem, setNewItem] = useState({
@@ -122,6 +130,74 @@ export default function RecipeEditor() {
         }
     };
 
+    const handleCalculateNutrition = async () => {
+        if (recipe.ingredients.length === 0) {
+            setStatus({ type: 'error', message: 'Please add ingredients first!' });
+            return;
+        }
+
+        let apiKey = localStorage.getItem('calorie_ninjas_key');
+        if (!apiKey) {
+            apiKey = prompt("Please enter your CalorieNinjas API Key (get one for free at calorieninjas.com):");
+            if (!apiKey) return;
+            localStorage.setItem('calorie_ninjas_key', apiKey);
+        }
+
+        setIsCalculating(true);
+        setStatus({ type: 'info', message: 'Calculating nutrition facts...' });
+
+        try {
+            const nutrition = await calculateNutrition(recipe.ingredients, apiKey);
+            setRecipe(prev => ({
+                ...prev,
+                nutrition: {
+                    ...prev.nutrition,
+                    ...nutrition
+                }
+            }));
+            setStatus({ type: 'success', message: 'Nutrition facts calculated successfully!' });
+        } catch (error) {
+            console.error(error);
+            if (error.message === "Invalid API Key") {
+                localStorage.removeItem('calorie_ninjas_key');
+                setStatus({ type: 'error', message: 'Invalid API Key. Please try again.' });
+            } else {
+                setStatus({ type: 'error', message: `Calculation failed: ${error.message}` });
+            }
+        } finally {
+            setIsCalculating(false);
+        }
+    };
+
+    const handleSmartPaste = (text) => {
+        const parsed = parsePlainText(text);
+        if (parsed) {
+            setRecipe(prev => ({
+                ...prev,
+                title: parsed.title || prev.title,
+                description: parsed.description || prev.description,
+                ingredients: [...prev.ingredients, ...parsed.ingredients],
+                steps: [...prev.steps, ...parsed.steps],
+                additionalInfo: (prev.additionalInfo ? prev.additionalInfo + '\n' : '') + parsed.additionalInfo,
+                metadata: {
+                    prepTime: parsed.metadata.prepTime || prev.metadata.prepTime,
+                    servings: parsed.metadata.servings || prev.metadata.servings
+                },
+                nutrition: {
+                    calories: parsed.nutrition.calories || prev.nutrition.calories,
+                    protein: parsed.nutrition.protein || prev.nutrition.protein,
+                    carbs: parsed.nutrition.carbs || prev.nutrition.carbs,
+                    fat: parsed.nutrition.fat || prev.nutrition.fat
+                }
+            }));
+            setStatus({ type: 'success', message: 'Recipe parsed successfully! Review the fields below.' });
+        } else {
+            setStatus({ type: 'error', message: 'Could not parse recipe text.' });
+        }
+    };
+
+
+
     return (
         <div className="max-w-3xl mx-auto animate-fade-in">
             <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary mb-8 transition-colors">
@@ -130,7 +206,18 @@ export default function RecipeEditor() {
             </Link>
 
             <div className="bg-card rounded-2xl shadow-sm border border-border p-8 md:p-12">
-                <h1 className="text-3xl font-serif font-bold mb-8 text-foreground">{editFilename ? 'Edit Recipe' : 'New Recipe'}</h1>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                    <h1 className="text-3xl font-serif font-bold text-foreground">{editFilename ? 'Edit Recipe' : 'New Recipe'}</h1>
+                    {!editFilename && (
+                        <button
+                            onClick={() => setShowSmartPaste(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-800 rounded-lg hover:bg-amber-200 transition-colors font-medium text-sm"
+                        >
+                            <Wand2 className="w-4 h-4" />
+                            Smart Paste
+                        </button>
+                    )}
+                </div>
 
                 {status.message && (
                     <div className={`p-4 rounded-lg mb-8 ${status.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' :
@@ -193,8 +280,25 @@ export default function RecipeEditor() {
                     </div>
 
                     {/* Nutrition Info */}
+                    {/* Nutrition Info */}
                     <div className="space-y-4">
-                        <h2 className="text-xl font-serif font-bold">Nutrition Information</h2>
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-xl font-serif font-bold">Nutrition Information</h2>
+                            <button
+                                onClick={handleCalculateNutrition}
+                                disabled={isCalculating || recipe.ingredients.length === 0}
+                                className="text-sm px-3 py-1.5 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                title="Requires free CalorieNinjas API Key"
+                            >
+                                {isCalculating ? (
+                                    <span className="animate-spin">⏳</span>
+                                ) : (
+                                    <Sparkles className="w-4 h-4 text-amber-500" />
+                                )}
+                                Auto-Calculate
+                            </button>
+                        </div>
+
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-muted-foreground mb-1">Calories</label>
@@ -401,6 +505,12 @@ export default function RecipeEditor() {
                 isOpen={showAuthModal}
                 onClose={() => setShowAuthModal(false)}
                 onSubmit={handleSubmit}
+            />
+
+            <SmartPasteModal
+                isOpen={showSmartPaste}
+                onClose={() => setShowSmartPaste(false)}
+                onImport={handleSmartPaste}
             />
         </div>
     );
