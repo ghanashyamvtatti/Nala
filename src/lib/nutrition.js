@@ -5,9 +5,8 @@
 function parseIngredient(text) {
     if (!text) return null;
 
-    // Basic regex for handling fractions and decimals at the start
-    // Matches: "1.5", "1/2", "1 1/2", "1"
-    const quantityRegex = /^(\d+(\s+\d+\/\d+)?|\d+\/\d+|\d+(\.\d+)?)\s*/;
+    // Reordered regex to match fractions properly (e.g. "1/2" before "1")
+    const quantityRegex = /^(\d+\s+\d+\/\d+|\d+\/\d+|\d+\.\d+|\d+)\s*/;
     const match = text.trim().match(quantityRegex);
 
     let quantity = 1; // Default
@@ -15,7 +14,7 @@ function parseIngredient(text) {
 
     if (match) {
         const qtyStr = match[1];
-        if (qtyStr.includes(' ')) {
+        if (qtyStr.includes(' ') && qtyStr.includes('/')) {
             // Mixed fraction: "1 1/2"
             const parts = qtyStr.split(' ');
             const [num, den] = parts[1].split('/').map(Number);
