@@ -76,6 +76,11 @@ export default function Layout({ children }) {
           <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
             Built with React & Tailwind. Open source on GitHub.
           </p>
+          <div className="flex gap-4">
+            <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground hover:underline">
+              About & Docs
+            </Link>
+          </div>
         </div>
       </footer>
     </div>
