@@ -8,7 +8,7 @@ A nostalgic Indian style tomato soup
 - Garlic - 3 cloves
 - dried basil seasoning
 - Butter - 1 tbsp
-- Jeera powder - 1/2 tbsp
+- Cumin powder - 1/2 tbsp
 - Turmeric - 1/2 tsp
 - Salt - as needed
 - Sugar - as needed
@@ -21,7 +21,7 @@ A nostalgic Indian style tomato soup
 1. Melt the butter in a saucepan
 2. Mince and add the garlic and fry until light brown
 3. Add the can of tomato paste
-4. Stir in some sugar, salt, chilli powder, jeera powder, dried basil seasoning and turmeric
+4. Stir in some sugar, salt, chilli powder, cumin powder, dried basil seasoning and turmeric
 5. Add the vegetable broth, or alternatively add the bouillon cube/ magic masala and add in some hot water to bring the soup to the right consistency
 6. Bring to boil
 7. Add pepper, and adjust sugar and salt as needed
