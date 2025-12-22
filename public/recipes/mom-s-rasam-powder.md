@@ -14,7 +14,9 @@
 1. Dry roast each of the above ingredients on low flame (except for the chillies)
 2. Fry the chillies in oil
 3. Wait for all the ingredients to cool down
-4. Blend together 
+4. Blend together
 
 
-## Nutrition
+## Metadata
+Prep Time: 30m
+Servings: 3 months
