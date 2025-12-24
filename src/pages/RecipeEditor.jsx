@@ -8,7 +8,7 @@ import { fetchRecipe } from '../lib/github';
 import { parseRecipe } from '../lib/parser';
 import { calculateNutrition } from '../lib/nutrition';
 import { Sparkles, Calculator, Info, Wand2 } from 'lucide-react';
-import { parsePlainText } from '../lib/parseutils';
+
 import SmartPasteModal from '../components/SmartPasteModal';
 
 
@@ -147,18 +147,19 @@ export default function RecipeEditor() {
             return;
         }
 
-        let apiKey = localStorage.getItem('usda_api_key');
-        if (!apiKey) {
-            apiKey = prompt("Please enter your USDA FoodData Central API Key (get one for free at api.data.gov):");
-            if (!apiKey) return;
-            localStorage.setItem('usda_api_key', apiKey);
-        }
-
         setIsCalculating(true);
-        setStatus({ type: 'info', message: 'Calculating nutrition facts...' });
+        setStatus({ type: 'info', message: 'Initializing AI to calculate nutrition... (First run may take a while to download model)' });
 
         try {
-            const nutrition = await calculateNutrition(recipe.ingredients, apiKey);
+            // We can pass a progress callback if we want, but simple status updates might suffice for this button
+            // or we can use a similar modal approach. For now, let's just update the message if we can hook into it.
+            // But calculateNutrition wrapper now accepts a callback.
+            const nutrition = await calculateNutrition(recipe.ingredients, (p) => {
+                if (p.text) {
+                    setStatus({ type: 'info', message: `AI Loading: ${Math.round((p.progress || 0) * 100)}% - ${p.text}` });
+                }
+            });
+
             setRecipe(prev => ({
                 ...prev,
                 nutrition: {
@@ -166,39 +167,34 @@ export default function RecipeEditor() {
                     ...nutrition
                 }
             }));
-            setStatus({ type: 'success', message: 'Nutrition facts calculated successfully!' });
+            setStatus({ type: 'success', message: 'Nutrition facts calculated successfully using in-browser AI!' });
         } catch (error) {
             console.error(error);
-            if (error.message === "Invalid API Key") {
-                localStorage.removeItem('usda_api_key');
-                setStatus({ type: 'error', message: 'Invalid API Key. Please try again.' });
-            } else {
-                setStatus({ type: 'error', message: `Calculation failed: ${error.message}` });
-            }
+            setStatus({ type: 'error', message: `Calculation failed: ${error.message}` });
         } finally {
             setIsCalculating(false);
         }
     };
 
-    const handleSmartPaste = (text) => {
-        const parsed = parsePlainText(text);
-        if (parsed) {
+    const handleSmartPaste = (parsedRecipe) => {
+        // parsedRecipe comes from the WebLLM generator now, which matches our schema
+        if (parsedRecipe) {
             setRecipe(prev => ({
                 ...prev,
-                title: parsed.title || prev.title,
-                description: parsed.description || prev.description,
-                ingredients: [...prev.ingredients, ...parsed.ingredients],
-                steps: [...prev.steps, ...parsed.steps],
-                additionalInfo: (prev.additionalInfo ? prev.additionalInfo + '\n' : '') + parsed.additionalInfo,
+                title: parsedRecipe.title || prev.title,
+                description: parsedRecipe.description || prev.description,
+                ingredients: [...prev.ingredients, ...(parsedRecipe.ingredients || [])],
+                steps: [...prev.steps, ...(parsedRecipe.steps || [])],
+                additionalInfo: (prev.additionalInfo ? prev.additionalInfo + '\n' : '') + (parsedRecipe.additionalInfo || ''),
                 metadata: {
-                    prepTime: parsed.metadata.prepTime || prev.metadata.prepTime,
-                    servings: parsed.metadata.servings || prev.metadata.servings
+                    prepTime: parsedRecipe.metadata?.prepTime || prev.metadata.prepTime,
+                    servings: parsedRecipe.metadata?.servings || prev.metadata.servings
                 },
                 nutrition: {
-                    calories: parsed.nutrition.calories || prev.nutrition.calories,
-                    protein: parsed.nutrition.protein || prev.nutrition.protein,
-                    carbs: parsed.nutrition.carbs || prev.nutrition.carbs,
-                    fat: parsed.nutrition.fat || prev.nutrition.fat
+                    calories: parsedRecipe.nutrition?.calories || prev.nutrition.calories,
+                    protein: parsedRecipe.nutrition?.protein || prev.nutrition.protein,
+                    carbs: parsedRecipe.nutrition?.carbs || prev.nutrition.carbs,
+                    fat: parsedRecipe.nutrition?.fat || prev.nutrition.fat
                 }
             }));
             setStatus({ type: 'success', message: 'Recipe parsed successfully! Review the fields below.' });
@@ -299,7 +295,7 @@ export default function RecipeEditor() {
                                 onClick={handleCalculateNutrition}
                                 disabled={isCalculating || recipe.ingredients.length === 0}
                                 className="text-sm px-3 py-1.5 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                title="Requires free USDA API Key"
+                                title="Powered by in-browser AI"
                             >
                                 {isCalculating ? (
                                     <span className="animate-spin">⏳</span>
