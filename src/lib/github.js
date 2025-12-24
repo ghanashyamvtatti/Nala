@@ -118,7 +118,7 @@ export async function fetchRecipe(filename) {
         // Local Dev Mode
         if (url.includes('localhost') || url.includes('127.0.0.1')) {
             try {
-                const res = await fetch(`/recipes/${filename}`);
+                const res = await fetch(`${import.meta.env.BASE_URL}recipes/${filename}`);
                 if (!res.ok) throw new Error("Recipe not found locally");
                 const text = await res.text();
                 return {

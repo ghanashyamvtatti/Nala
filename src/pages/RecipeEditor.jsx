@@ -76,6 +76,17 @@ export default function RecipeEditor() {
         setNewItem(prev => ({ ...prev, [field]: '' }));
     };
 
+    const handleUpdateItem = (field, index, value) => {
+        setRecipe(prev => {
+            const newArray = [...prev[field]];
+            newArray[index] = value;
+            return {
+                ...prev,
+                [field]: newArray
+            };
+        });
+    };
+
     const handleRemoveItem = (field, index) => {
         setRecipe(prev => ({
             ...prev,
@@ -364,9 +375,15 @@ export default function RecipeEditor() {
                         </div>
                         <ul className="space-y-2">
                             {recipe.ingredients.map((item, index) => (
-                                <li key={index} className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg group">
-                                    <span>{item}</span>
-                                    <button onClick={() => handleRemoveItem('ingredients', index)} className="text-destructive hover:text-destructive/80 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <li key={index} className="flex items-center justify-between p-2 pl-3 bg-secondary/30 rounded-lg group">
+                                    <input
+                                        type="text"
+                                        className="flex-1 bg-transparent border-none focus:ring-0 p-0 text-foreground"
+                                        value={item}
+                                        onChange={(e) => handleUpdateItem('ingredients', index, e.target.value)}
+                                        placeholder="Ingredient"
+                                    />
+                                    <button onClick={() => handleRemoveItem('ingredients', index)} className="text-destructive hover:text-destructive/80 opacity-0 group-hover:opacity-100 transition-opacity p-1">
                                         <Trash2 className="w-4 h-4" />
                                     </button>
                                 </li>
@@ -414,8 +431,14 @@ export default function RecipeEditor() {
                         <ol className="space-y-2">
                             {recipe.steps.map((item, index) => (
                                 <li key={index} className="flex items-start gap-3 p-3 bg-secondary/30 rounded-lg group">
-                                    <span className="font-bold text-primary mt-0.5">{index + 1}.</span>
-                                    <span className="flex-1">{item}</span>
+                                    <span className="font-bold text-primary mt-1.5">{index + 1}.</span>
+                                    <textarea
+                                        className="flex-1 bg-transparent border-none focus:ring-0 p-0 text-foreground resize-none"
+                                        rows={Math.max(1, item.split('\n').length)}
+                                        value={item}
+                                        onChange={(e) => handleUpdateItem('steps', index, e.target.value)}
+                                        placeholder="Step instruction"
+                                    />
                                     <button onClick={() => handleRemoveItem('steps', index)} className="text-destructive hover:text-destructive/80 opacity-0 group-hover:opacity-100 transition-opacity mt-0.5">
                                         <Trash2 className="w-4 h-4" />
                                     </button>
@@ -446,9 +469,15 @@ export default function RecipeEditor() {
                         <ul className="space-y-2">
                             {recipe.social.map((item, index) => (
                                 <li key={index} className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg group">
-                                    <div className="flex items-center gap-2 overflow-hidden">
+                                    <div className="flex items-center gap-2 overflow-hidden flex-1">
                                         <LinkIcon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                                        <span className="truncate text-sm">{item}</span>
+                                        <input
+                                            type="text"
+                                            className="flex-1 bg-transparent border-none focus:ring-0 p-0 text-sm truncate"
+                                            value={item}
+                                            onChange={(e) => handleUpdateItem('social', index, e.target.value)}
+                                            placeholder="Social Link URL"
+                                        />
                                     </div>
                                     <button onClick={() => handleRemoveItem('social', index)} className="text-destructive hover:text-destructive/80 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-2">
                                         <Trash2 className="w-4 h-4" />
