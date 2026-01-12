@@ -93,8 +93,10 @@ export async function fetchRecipes() {
                 path: file.path,
             });
 
-            // Decode content (base64)
-            const content = atob(data.content);
+            // Decode content (base64) to UTF-8
+            const binaryString = atob(data.content);
+            const bytes = Uint8Array.from(binaryString, c => c.charCodeAt(0));
+            const content = new TextDecoder().decode(bytes);
             return {
                 filename: file.name,
                 path: file.path,
@@ -141,7 +143,10 @@ export async function fetchRecipe(filename) {
             path: `public/recipes/${filename}`,
         });
 
-        const content = atob(data.content);
+        // Decode content (base64) to UTF-8
+        const binaryString = atob(data.content);
+        const bytes = Uint8Array.from(binaryString, c => c.charCodeAt(0));
+        const content = new TextDecoder().decode(bytes);
         return {
             filename: data.name,
             path: data.path,

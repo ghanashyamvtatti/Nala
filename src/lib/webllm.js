@@ -41,6 +41,7 @@ export async function generateRecipe(text, progressCallback) {
         "steps": ["Step 1", "Step 2"],
         "additionalInfo": "Extra notes",
         "metadata": { "prepTime": "10m", "servings": "4" },
+        "tags": ["Tag1", "Tag2"],
         "nutrition": { "calories": "200", "protein": "10g", "carbs": "20g", "fat": "5g" }
     }
     If a field is missing, leave it as an empty string or empty array.

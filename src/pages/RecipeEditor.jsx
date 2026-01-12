@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPullRequest } from '../lib/github';
 import { recipeToMarkdown } from '../lib/parser';
 import AuthModal from '../components/AuthModal';
-import { Plus, Trash2, Save, ArrowLeft, Link as LinkIcon } from 'lucide-react';
+import { Plus, Trash2, Save, ArrowLeft, Link as LinkIcon, X } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { fetchRecipe } from '../lib/github';
 import { parseRecipe } from '../lib/parser';
@@ -20,6 +20,9 @@ export default function RecipeEditor() {
         steps: [],
         variations: [],
         social: [],
+        sources: [],
+        tags: [],
+        author: '',
         additionalInfo: '',
         metadata: {
             prepTime: '',
@@ -64,7 +67,10 @@ export default function RecipeEditor() {
         ingredients: '',
         steps: '',
         variations: '',
-        social: ''
+        social: '',
+        tags: '',
+        sourceTitle: '',
+        sourceUrl: ''
     });
 
     const handleAddItem = (field) => {
@@ -74,6 +80,19 @@ export default function RecipeEditor() {
             [field]: [...prev[field], newItem[field]]
         }));
         setNewItem(prev => ({ ...prev, [field]: '' }));
+    };
+
+    const handleAddSource = () => {
+        if (!newItem.sourceUrl.trim()) return;
+        const source = {
+            title: newItem.sourceTitle.trim() || new URL(newItem.sourceUrl).hostname,
+            url: newItem.sourceUrl.trim()
+        };
+        setRecipe(prev => ({
+            ...prev,
+            sources: [...(prev.sources || []), source]
+        }));
+        setNewItem(prev => ({ ...prev, sourceTitle: '', sourceUrl: '' }));
     };
 
     const handleUpdateItem = (field, index, value) => {
@@ -122,6 +141,9 @@ export default function RecipeEditor() {
                     steps: [],
                     variations: [],
                     social: [],
+                    sources: [],
+                    tags: [],
+                    author: '',
                     additionalInfo: '',
                     metadata: { prepTime: '', servings: '' },
                     nutrition: { calories: '', protein: '', carbs: '', fat: '' }
@@ -185,6 +207,7 @@ export default function RecipeEditor() {
                 description: parsedRecipe.description || prev.description,
                 ingredients: [...prev.ingredients, ...(parsedRecipe.ingredients || [])],
                 steps: [...prev.steps, ...(parsedRecipe.steps || [])],
+                tags: [...(prev.tags || []), ...(parsedRecipe.tags || [])],
                 additionalInfo: (prev.additionalInfo ? prev.additionalInfo + '\n' : '') + (parsedRecipe.additionalInfo || ''),
                 metadata: {
                     prepTime: parsedRecipe.metadata?.prepTime || prev.metadata.prepTime,
@@ -253,6 +276,16 @@ export default function RecipeEditor() {
                             />
                         </div>
                         <div>
+                            <label className="block text-sm font-medium text-muted-foreground mb-1">Author</label>
+                            <input
+                                type="text"
+                                className="w-full px-4 py-2 rounded-lg border border-input bg-background focus:ring-2 focus:ring-ring focus:border-transparent outline-none transition-all"
+                                value={recipe.author || ''}
+                                onChange={e => setRecipe({ ...recipe, author: e.target.value })}
+                                placeholder="e.g. Grandma, or Your Name"
+                            />
+                        </div>
+                        <div>
                             <label className="block text-sm font-medium text-muted-foreground mb-1">Description</label>
                             <textarea
                                 className="w-full px-4 py-2 rounded-lg border border-input bg-background focus:ring-2 focus:ring-ring focus:border-transparent outline-none transition-all"
@@ -262,6 +295,38 @@ export default function RecipeEditor() {
                                 placeholder="A brief description of the dish..."
                             />
                         </div>
+
+                        {/* Tags */}
+                        <div>
+                            <label className="block text-sm font-medium text-muted-foreground mb-1">Tags</label>
+                            <div className="flex flex-wrap gap-2 mb-2">
+                                {recipe.tags && recipe.tags.map((tag, index) => (
+                                    <span key={index} className="inline-flex items-center gap-1 bg-secondary px-2 py-1 rounded-full text-sm">
+                                        {tag}
+                                        <button onClick={() => handleRemoveItem('tags', index)} className="text-muted-foreground hover:text-destructive transition-colors">
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    className="flex-1 px-4 py-2 rounded-lg border border-input bg-background focus:ring-2 focus:ring-ring focus:border-transparent outline-none transition-all"
+                                    value={newItem.tags}
+                                    onChange={e => setNewItem({ ...newItem, tags: e.target.value })}
+                                    onKeyPress={e => e.key === 'Enter' && handleAddItem('tags')}
+                                    placeholder="Add a tag..."
+                                />
+                                <button
+                                    onClick={() => handleAddItem('tags')}
+                                    className="p-2 bg-secondary border border-border rounded-lg hover:bg-secondary/80 transition-colors"
+                                >
+                                    <Plus className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </div>
+
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-muted-foreground mb-1">Prep Time</label>
@@ -441,6 +506,88 @@ export default function RecipeEditor() {
                                 </li>
                             ))}
                         </ol>
+                    </div>
+
+                    {/* Variations */}
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-xl font-serif font-bold">Variations</h2>
+                        </div>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                className="flex-1 px-4 py-2 rounded-lg border border-input bg-background focus:ring-2 focus:ring-ring focus:border-transparent outline-none transition-all"
+                                value={newItem.variations}
+                                onChange={e => setNewItem({ ...newItem, variations: e.target.value })}
+                                onKeyPress={e => e.key === 'Enter' && handleAddItem('variations')}
+                                placeholder="Add a variation (e.g., 'Vegan Option: Use flax egg')..."
+                            />
+                            <button
+                                onClick={() => handleAddItem('variations')}
+                                className="p-2 bg-secondary border border-border rounded-lg hover:bg-secondary/80 transition-colors"
+                            >
+                                <Plus className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <ul className="space-y-2">
+                            {recipe.variations && recipe.variations.map((item, index) => (
+                                <li key={index} className="flex items-center justify-between p-2 pl-3 bg-secondary/30 rounded-lg group">
+                                    <input
+                                        type="text"
+                                        className="flex-1 bg-transparent border-none focus:ring-0 p-0 text-foreground"
+                                        value={item}
+                                        onChange={(e) => handleUpdateItem('variations', index, e.target.value)}
+                                        placeholder="Variation"
+                                    />
+                                    <button onClick={() => handleRemoveItem('variations', index)} className="text-destructive hover:text-destructive/80 opacity-0 group-hover:opacity-100 transition-opacity p-1">
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    {/* Sources (Links with Preview) */}
+                    <div className="space-y-4">
+                        <h2 className="text-xl font-serif font-bold">Sources & Inspiration</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-[1fr,2fr,auto] gap-2">
+                            <input
+                                type="text"
+                                className="px-4 py-2 rounded-lg border border-input bg-background"
+                                value={newItem.sourceTitle}
+                                onChange={e => setNewItem({ ...newItem, sourceTitle: e.target.value })}
+                                placeholder="Title (e.g. NYT Cooking)"
+                            />
+                            <input
+                                type="text"
+                                className="px-4 py-2 rounded-lg border border-input bg-background"
+                                value={newItem.sourceUrl}
+                                onChange={e => setNewItem({ ...newItem, sourceUrl: e.target.value })}
+                                onKeyPress={e => e.key === 'Enter' && handleAddSource()}
+                                placeholder="https://..."
+                            />
+                            <button
+                                onClick={handleAddSource}
+                                className="p-2 bg-secondary border border-border rounded-lg hover:bg-secondary/80 transition-colors"
+                            >
+                                <Plus className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="space-y-2">
+                            {recipe.sources && recipe.sources.map((source, index) => (
+                                <div key={index} className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg group border border-border/50">
+                                    <div className="flex flex-col">
+                                        <span className="font-medium text-sm">{source.title || 'Source'}</span>
+                                        <a href={source.url} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:underline truncate max-w-[300px]">
+                                            {source.url}
+                                        </a>
+                                    </div>
+                                    <button onClick={() => handleRemoveItem('sources', index)} className="text-destructive hover:text-destructive/80 opacity-0 group-hover:opacity-100 transition-opacity p-1">
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
                     </div>
 
                     {/* Social Links */}

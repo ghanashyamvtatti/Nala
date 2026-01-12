@@ -2,12 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { fetchRecipes } from '../lib/github';
 import { parseRecipe } from '../lib/parser';
 import RecipeCard from '../components/RecipeCard';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { Loader2, AlertCircle, Search, Filter, X } from 'lucide-react';
 
 export default function Home() {
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Search and Filter State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTag, setSelectedTag] = useState(null);
 
   useEffect(() => {
     async function loadRecipes() {
@@ -33,6 +37,19 @@ export default function Home() {
     loadRecipes();
   }, []);
 
+  // Compute unique tags from all recipes
+  const allTags = Array.from(new Set(
+    recipes.flatMap(recipe => recipe.tags || [])
+  )).sort();
+
+  // Filter recipes
+  const filteredRecipes = recipes.filter(recipe => {
+    const matchesSearch = (recipe.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (recipe.description || '').toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesTag = selectedTag ? (recipe.tags || []).includes(selectedTag) : true;
+    return matchesSearch && matchesTag;
+  });
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
@@ -52,31 +69,85 @@ export default function Home() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       <div className="text-center space-y-4 max-w-2xl mx-auto">
         <h1 className="text-4xl md:text-5xl font-serif font-bold tracking-tight text-foreground">
           Nala
         </h1>
         <p className="text-lg text-muted-foreground">
-          Nala is a open source repository for gathering and experimenting with food recipes
+          A home for your culinary experiments.
         </p>
-        <div className="text-sm text-muted-foreground/80 bg-secondary/50 p-4 rounded-lg inline-block text-left">
-          <p className="font-semibold mb-2 text-center">Purpose</p>
-          <ul className="list-disc list-inside space-y-1">
-            <li>Create, track and share recipes easily</li>
-            <li>Easily experiment with recipes, tracking results of variations and versioning them</li>
-            <li>Allow others to contribute and propose changes to your recipe</li>
-          </ul>
-        </div>
       </div>
 
-      {recipes.length === 0 ? (
-        <div className="text-center py-12 border border-dashed border-border rounded-lg bg-muted/30">
-          <p className="text-muted-foreground">No recipes found. Be the first to add one!</p>
+      {/* Search and Filter Section */}
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search recipes..."
+            className="w-full pl-10 pr-4 py-3 rounded-xl border border-input bg-card shadow-sm focus:ring-2 focus:ring-ring focus:border-transparent outline-none text-lg transition-all"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-secondary rounded-full text-muted-foreground transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {allTags.length > 0 && (
+          <div className="flex flex-wrap gap-2 justify-center">
+            <button
+              onClick={() => setSelectedTag(null)}
+              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedTag === null
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                }`}
+            >
+              All
+            </button>
+            {allTags.map(tag => (
+              <button
+                key={tag}
+                onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedTag === tag
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                  }`}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {filteredRecipes.length === 0 ? (
+        <div className="text-center py-16 border border-dashed border-border rounded-2xl bg-muted/30">
+          <div className="flex flex-col items-center gap-4">
+            <Search className="w-12 h-12 text-muted-foreground/50" />
+            <div className="space-y-1">
+              <p className="text-lg font-medium text-foreground">No recipes found</p>
+              <p className="text-muted-foreground">Try adjusting your search or filters.</p>
+            </div>
+            {(searchQuery || selectedTag) && (
+              <button
+                onClick={() => { setSearchQuery(''); setSelectedTag(null); }}
+                className="text-sm text-primary hover:underline"
+              >
+                Clear all filters
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {recipes.map((recipe) => (
+          {filteredRecipes.map((recipe) => (
             <RecipeCard key={recipe.filename} recipe={recipe} />
           ))}
         </div>

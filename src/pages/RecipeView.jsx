@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { fetchRecipe, getRepoDetails } from '../lib/github';
 import { parseRecipe } from '../lib/parser';
+import { parseIngredient, formatIngredient } from '../lib/ingredient-parser';
 import SocialEmbed from '../components/SocialEmbed';
 import ReactMarkdown from 'react-markdown';
-import { Clock, Users, ArrowLeft, Loader2, AlertCircle, ChefHat, History, Edit } from 'lucide-react';
+import { Clock, Users, ArrowLeft, Loader2, AlertCircle, ChefHat, History, Edit, ExternalLink, User } from 'lucide-react';
 
 export default function RecipeView() {
     const { filename } = useParams();
@@ -13,12 +14,21 @@ export default function RecipeView() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // Scaling
+    const [currentServings, setCurrentServings] = useState(4);
+    const [baseServings, setBaseServings] = useState(4);
+
     useEffect(() => {
         async function loadRecipe() {
             try {
                 const data = await fetchRecipe(decodeURIComponent(filename));
                 const parsed = parseRecipe(data.content);
                 setRecipe(parsed);
+
+                // Set initial servings
+                const servings = parseInt(parsed.metadata?.servings) || 4;
+                setBaseServings(servings);
+                setCurrentServings(servings);
             } catch (err) {
                 console.error(err);
                 setError('Failed to load recipe.');
@@ -28,6 +38,12 @@ export default function RecipeView() {
         }
         loadRecipe();
     }, [filename]);
+
+    const handleServingsChange = (newServings) => {
+        if (newServings >= 1) {
+            setCurrentServings(newServings);
+        }
+    };
 
     if (loading) {
         return (
@@ -49,11 +65,12 @@ export default function RecipeView() {
 
     if (!recipe) return null;
 
+    const scaleFactor = baseServings ? (currentServings / baseServings) : 1;
+
     return (
         <div className="max-w-3xl mx-auto animate-fade-in">
             <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary mb-8 transition-colors">
                 <ArrowLeft className="w-4 h-4" />
-                Back to Recipes
                 Back to Recipes
             </Link>
 
@@ -78,21 +95,34 @@ export default function RecipeView() {
 
             <article className="prose prose-slate dark:prose-invert max-w-none">
                 <header className="mb-12 not-prose">
-                    <h1 className="text-4xl md:text-5xl font-serif font-bold tracking-tight text-foreground mb-6">
+                    <h1 className="text-4xl md:text-5xl font-serif font-bold tracking-tight text-foreground mb-4">
                         {recipe.title}
                     </h1>
 
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+
+                    {/* Tags */}
+                    {recipe.tags && recipe.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-6">
+                            {recipe.tags.map((tag, idx) => (
+                                <span key={idx} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
+                                    {tag}
+                                </span>
+                            ))}
+                        </div>
+                    )}
+
+                    <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
                         {recipe.metadata?.prepTime && (
-                            <div className="flex items-center gap-1.5 bg-secondary px-3 py-1 rounded-full">
+                            <div className="flex items-center gap-2">
                                 <Clock className="w-4 h-4" />
                                 <span>{recipe.metadata.prepTime}</span>
                             </div>
                         )}
-                        {recipe.metadata?.servings && (
-                            <div className="flex items-center gap-1.5 bg-secondary px-3 py-1 rounded-full">
-                                <Users className="w-4 h-4" />
-                                <span>{recipe.metadata.servings} servings</span>
+                        {/* Author */}
+                        {recipe.author && (
+                            <div className="flex items-center gap-2">
+                                <User className="w-4 h-4" />
+                                <span>Submitted by <span className="font-medium text-foreground">{recipe.author}</span></span>
                             </div>
                         )}
                     </div>
@@ -107,19 +137,88 @@ export default function RecipeView() {
                 <div className="grid md:grid-cols-[1fr,1.5fr] gap-12">
                     <div className="space-y-8">
                         <section>
-                            <h2 className="text-2xl font-serif font-bold mb-6 flex items-center gap-2">
-                                <ChefHat className="w-6 h-6 text-primary" />
-                                Ingredients
-                            </h2>
+                            <div className="flex items-center justify-between mb-6">
+                                <h2 className="text-2xl font-serif font-bold flex items-center gap-2">
+                                    <ChefHat className="w-6 h-6 text-primary" />
+                                    Ingredients
+                                </h2>
+                            </div>
+
+                            {/* Portion Scaling Control */}
+                            <div className="bg-secondary/30 p-4 rounded-xl mb-6">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm font-medium text-muted-foreground">Servings</span>
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            onClick={() => handleServingsChange(currentServings - 1)}
+                                            className="w-8 h-8 rounded-full bg-background shadow-sm border border-border flex items-center justify-center hover:bg-secondary transition-colors"
+                                        >
+                                            -
+                                        </button>
+                                        <span className="font-bold w-6 text-center">{currentServings}</span>
+                                        <button
+                                            onClick={() => handleServingsChange(currentServings + 1)}
+                                            className="w-8 h-8 rounded-full bg-background shadow-sm border border-border flex items-center justify-center hover:bg-secondary transition-colors"
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="text-xs text-muted-foreground text-center">
+                                    (Original: {baseServings})
+                                </div>
+                            </div>
+
                             <ul className="space-y-3 not-prose">
-                                {recipe.ingredients.map((ingredient, index) => (
-                                    <li key={index} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/50">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
-                                        <span className="text-foreground">{ingredient}</span>
-                                    </li>
-                                ))}
+                                {recipe.ingredients.map((ingredient, index) => {
+                                    const parsed = parseIngredient(ingredient);
+                                    // If unknown serving size (0/null base), default to no scale
+                                    const display = parsed ? formatIngredient(parsed, scaleFactor) : ingredient;
+
+                                    return (
+                                        <li key={index} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/50">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
+                                            <span className="text-foreground">{display}</span>
+                                        </li>
+                                    );
+                                })}
                             </ul>
                         </section>
+
+                        {/* Variations */}
+                        {recipe.variations && recipe.variations.length > 0 && (
+                            <section>
+                                <h2 className="text-xl font-serif font-bold mb-4">Variations</h2>
+                                <ul className="space-y-3">
+                                    {recipe.variations.map((variation, index) => (
+                                        <li key={index} className="text-sm text-muted-foreground p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 rounded-lg">
+                                            {variation}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </section>
+                        )}
+
+                        {/* Sources */}
+                        {recipe.sources && recipe.sources.length > 0 && (
+                            <section>
+                                <h2 className="text-xl font-serif font-bold mb-4">Sources</h2>
+                                <div className="space-y-3">
+                                    {recipe.sources.map((source, index) => (
+                                        <a key={index} href={source.url} target="_blank" rel="noopener noreferrer" className="block p-4 border border-border rounded-xl hover:bg-secondary/50 transition-colors group">
+                                            <div className="flex items-center justify-between">
+                                                <span className="font-medium group-hover:text-primary transition-colors">{source.title || 'Source Link'}</span>
+                                                <ExternalLink className="w-4 h-4 text-muted-foreground" />
+                                            </div>
+                                            <div className="text-xs text-muted-foreground truncate mt-1 opacity-70">
+                                                {source.url}
+                                            </div>
+                                        </a>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
 
                         {recipe.social && recipe.social.length > 0 && (
                             <section>
@@ -138,30 +237,31 @@ export default function RecipeView() {
                                 <h2 className="text-xl font-serif font-bold mb-4">Nutrition</h2>
                                 <div className="grid grid-cols-2 gap-4">
                                     {recipe.nutrition.calories && (
-                                        <div className="bg-secondary/50 p-3 rounded-lg">
+                                        <div className="bg-secondary/50 p-3 rounded-lg text-center">
                                             <span className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Calories</span>
                                             <span className="font-medium">{recipe.nutrition.calories}</span>
                                         </div>
                                     )}
                                     {recipe.nutrition.protein && (
-                                        <div className="bg-secondary/50 p-3 rounded-lg">
+                                        <div className="bg-secondary/50 p-3 rounded-lg text-center">
                                             <span className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Protein</span>
                                             <span className="font-medium">{recipe.nutrition.protein}</span>
                                         </div>
                                     )}
                                     {recipe.nutrition.carbs && (
-                                        <div className="bg-secondary/50 p-3 rounded-lg">
+                                        <div className="bg-secondary/50 p-3 rounded-lg text-center">
                                             <span className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Carbs</span>
                                             <span className="font-medium">{recipe.nutrition.carbs}</span>
                                         </div>
                                     )}
                                     {recipe.nutrition.fat && (
-                                        <div className="bg-secondary/50 p-3 rounded-lg">
+                                        <div className="bg-secondary/50 p-3 rounded-lg text-center">
                                             <span className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Fat</span>
                                             <span className="font-medium">{recipe.nutrition.fat}</span>
                                         </div>
                                     )}
                                 </div>
+                                <p className="text-[10px] text-muted-foreground text-center mt-2 opacity-60">Estimated values per serving</p>
                             </section>
                         )}
                     </div>
