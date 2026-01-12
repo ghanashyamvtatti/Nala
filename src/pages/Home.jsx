@@ -47,7 +47,11 @@ export default function Home() {
     const matchesSearch = (recipe.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (recipe.description || '').toLowerCase().includes(searchQuery.toLowerCase());
     const matchesTag = selectedTag ? (recipe.tags || []).includes(selectedTag) : true;
-    return matchesSearch && matchesTag;
+
+    // Hide variations from main list to avoid clutter
+    const isVariation = !!recipe.metadata?.variationOf;
+
+    return matchesSearch && matchesTag && !isVariation;
   });
 
   if (loading) {
@@ -109,8 +113,8 @@ export default function Home() {
                 <button
                   onClick={() => setSelectedTag(null)}
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap shrink-0 border ${selectedTag === null
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'bg-card text-foreground border-input hover:bg-secondary hover:text-secondary-foreground'
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-card text-foreground border-input hover:bg-secondary hover:text-secondary-foreground'
                     }`}
                 >
                   All
@@ -120,8 +124,8 @@ export default function Home() {
                     key={tag}
                     onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap shrink-0 border ${selectedTag === tag
-                        ? 'bg-primary text-primary-foreground border-primary'
-                        : 'bg-card text-foreground border-input hover:bg-secondary hover:text-secondary-foreground'
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-card text-foreground border-input hover:bg-secondary hover:text-secondary-foreground'
                       }`}
                   >
                     {tag}
