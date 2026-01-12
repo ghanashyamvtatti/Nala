@@ -52,6 +52,8 @@ export function parseRecipe(markdown) {
                 } else if (lowerLine.startsWith('tags:')) {
                     const tagString = line.substring(5).trim();
                     recipe.tags = tagString.split(',').map(t => t.trim()).filter(Boolean);
+                } else if (lowerLine.startsWith('variation of:')) {
+                    recipe.metadata.variationOf = line.substring(13).trim();
                 }
             } else if (currentSection === 'ingredients') {
                 if (line.startsWith('- ') || line.startsWith('* ')) {
@@ -172,6 +174,7 @@ export function recipeToMarkdown(recipe) {
         if (recipe.metadata.servings) markdown += `Servings: ${recipe.metadata.servings}\n`;
         if (recipe.author) markdown += `Author: ${recipe.author}\n`;
         if (recipe.tags && recipe.tags.length > 0) markdown += `Tags: ${recipe.tags.join(', ')}\n`;
+        if (recipe.metadata.variationOf) markdown += `Variation of: ${recipe.metadata.variationOf}\n`;
     }
 
     if (recipe.nutrition && Object.keys(recipe.nutrition).length > 0) {

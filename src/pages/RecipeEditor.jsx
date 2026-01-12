@@ -38,22 +38,42 @@ export default function RecipeEditor() {
 
     const [searchParams] = useSearchParams();
     const editFilename = searchParams.get('filename');
+    const variationOf = searchParams.get('variationOf');
 
     useEffect(() => {
-        if (editFilename) {
+        if (editFilename || variationOf) {
             async function loadRecipe() {
                 try {
-                    const data = await fetchRecipe(editFilename);
+                    // Fetch either the recipe to edit or the source for the variation
+                    const targetFile = editFilename || variationOf;
+                    const data = await fetchRecipe(targetFile);
                     const parsed = parseRecipe(data.content);
-                    setRecipe(parsed);
+
+                    if (variationOf) {
+                        // If creating a variation, we reset the title and set metadata link
+                        setRecipe({
+                            ...parsed,
+                            title: `Variation of ${parsed.title}`,
+                            metadata: {
+                                ...parsed.metadata,
+                                variationOf: targetFile
+                            },
+                            // Often you want to keep ingredients/steps but maybe not all metadata?
+                            // For now, let's keep everything as a starting point.
+                        });
+                        setStatus({ type: 'info', message: `Start your variation of "${parsed.title}"` });
+                    } else {
+                        // Normal edit
+                        setRecipe(parsed);
+                    }
                 } catch (error) {
-                    console.error("Failed to load recipe for editing:", error);
-                    setStatus({ type: 'error', message: 'Failed to load recipe for editing.' });
+                    console.error("Failed to load recipe:", error);
+                    setStatus({ type: 'error', message: 'Failed to load recipe.' });
                 }
             }
             loadRecipe();
         }
-    }, [editFilename]);
+    }, [editFilename, variationOf]);
 
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [status, setStatus] = useState({ type: '', message: '' });

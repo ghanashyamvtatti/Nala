@@ -80,51 +80,57 @@ export default function Home() {
       </div>
 
       {/* Search and Filter Section */}
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Search recipes..."
-            className="w-full pl-10 pr-4 py-3 rounded-xl border border-input bg-card shadow-sm focus:ring-2 focus:ring-ring focus:border-transparent outline-none text-lg transition-all"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-secondary rounded-full text-muted-foreground transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
+      <div className="max-w-4xl mx-auto space-y-4">
+        <div className="flex flex-col md:flex-row gap-4 items-center">
+          {/* Search Bar */}
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search recipes..."
+              className="w-full pl-10 pr-4 py-3 rounded-xl border border-input bg-card shadow-sm focus:ring-2 focus:ring-ring focus:border-transparent outline-none text-lg transition-all"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-secondary rounded-full text-muted-foreground transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Inline Tags Filter */}
+          {allTags.length > 0 && (
+            <div className="relative group max-w-full md:max-w-xs shrink-0">
+              <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar mask-gradient px-1">
+                <button
+                  onClick={() => setSelectedTag(null)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap shrink-0 border ${selectedTag === null
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-card text-foreground border-input hover:bg-secondary hover:text-secondary-foreground'
+                    }`}
+                >
+                  All
+                </button>
+                {allTags.map(tag => (
+                  <button
+                    key={tag}
+                    onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap shrink-0 border ${selectedTag === tag
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-card text-foreground border-input hover:bg-secondary hover:text-secondary-foreground'
+                      }`}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
         </div>
-
-        {allTags.length > 0 && (
-          <div className="flex flex-wrap gap-2 justify-center">
-            <button
-              onClick={() => setSelectedTag(null)}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedTag === null
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-                }`}
-            >
-              All
-            </button>
-            {allTags.map(tag => (
-              <button
-                key={tag}
-                onClick={() => setSelectedTag(tag === selectedTag ? null : tag)}
-                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedTag === tag
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-                  }`}
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
 
       {filteredRecipes.length === 0 ? (
