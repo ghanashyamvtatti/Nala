@@ -1,4 +1,5 @@
 # Fluffy Pancakes
+
 ## Description
 The fluffiest pancakes you'll ever make. Perfect for a Sunday morning breakfast.
 
@@ -24,5 +25,9 @@ The fluffiest pancakes you'll ever make. Perfect for a Sunday morning breakfast.
 - Add blueberries or chocolate chips to the batter.
 - Substitute milk with buttermilk for tangier pancakes.
 
-## Social
-- https://www.instagram.com/p/C-123456789/
+
+## Nutrition
+Calories: 1400
+Protein: 18
+Carbs: 240
+Fat: 90

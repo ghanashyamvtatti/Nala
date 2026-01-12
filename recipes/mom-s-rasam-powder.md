@@ -20,3 +20,9 @@
 ## Metadata
 Prep Time: 30m
 Servings: 3 months
+
+## Nutrition
+Calories: 240
+Protein: 12
+Carbs: 38
+Fat: 12
