@@ -31,6 +31,7 @@ To get the authentic flavor, you need these three fresh herbs. You generally do 
 ## Metadata
 Prep Time: 15m
 Servings: 2–3
+Author: Nala User
 
 ## Nutrition
 Calories: 200

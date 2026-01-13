@@ -20,6 +20,7 @@
 ## Metadata
 Prep Time: 30m
 Servings: 3 months
+Author: Nala User
 
 ## Nutrition
 Calories: 240

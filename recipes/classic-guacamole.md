@@ -21,6 +21,9 @@ Simple, fresh, and authentic guacamole.
 ## Additional Information
 Serve immediately with tortilla chips. To store, press plastic wrap directly onto the surface to prevent browning.
 
+## Metadata
+Author: Nala User
+
 ## Nutrition
 Calories: 420
 Protein: 10
