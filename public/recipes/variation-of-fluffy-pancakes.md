@@ -26,6 +26,10 @@ The fluffiest pancakes you'll ever make. Perfect for a Sunday morning breakfast.
 - Substitute milk with buttermilk for tangier pancakes.
 
 
+## Metadata
+Author: Nala User
+Variation of: fluffy-pancakes.md
+
 ## Nutrition
 Calories: 1400
 Protein: 18
